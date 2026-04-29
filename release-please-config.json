@@ -1,0 +1,10 @@
+{
+	"packages": {
+		".": {
+			"release-type": "helm",
+			"extra-files": [
+				"chart/Chart.yaml"
+			]
+		}
+	}
+}

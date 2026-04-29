@@ -1,0 +1,66 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'chart/CHANGELOG.md'
+
+jobs:
+  publish-and-release:
+    name: Publish and Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone the code
+        uses: actions/checkout@v4
+
+      - uses: azure/setup-helm@dda3372f752e03dde6b3237bc9431cdc2f7a02a2 # v5.0.0
+        id: install-helm
+        with:
+          version: 'v3.20.2'
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4.0.0
+
+      - name: Log in to ghcr.io container registry
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Login to ghcr.io OCI registry
+        env:
+          USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        shell: bash
+        run: |
+          make helm-login HELM_REGISTRY=oci://ghcr.io/sanadhis
+
+      - name: Create release
+        id: release
+        uses: googleapis/release-please-action@5c625bfb5d1ff62eadeeb3772007f7f66fdcf071 # v4.4.1
+        with:
+          token: ${{ secrets.RELEASE_GITHUB_PAT }}
+
+      - name: Build and Push Docker images
+        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
+        with:
+          context: docker
+          push: true
+          tags: ghcr.io/sanadhis/k8s-image-mirror:${{ steps.release.outputs.version }}
+          platforms: linux/amd64,linux/arm64
+
+      - name: Package Helm Charts
+        shell: bash
+        run: |
+          make package IMAGE_TAG=${{ steps.release.outputs.version }}
+
+      - name: Publish Helm Charts
+        shell: bash
+        run: |
+          make publish IMAGE_TAG=${{ steps.release.outputs.version }} HELM_REGISTRY=oci://ghcr.io/sanadhis

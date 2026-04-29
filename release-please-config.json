@@ -1,10 +1,8 @@
 {
 	"packages": {
 		".": {
-			"release-type": "helm",
-			"extra-files": [
-				"chart/Chart.yaml"
-			]
+			"release-type": "simple",
+			"changelog-path": "CHANGELOG.md"
 		}
 	}
 }

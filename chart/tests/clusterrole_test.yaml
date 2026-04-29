@@ -1,0 +1,42 @@
+suite: ClusterRole
+templates:
+  - clusterrole.yaml
+
+release:
+  name: k8s-image-mirror
+
+tests:
+  - it: should create a ClusterRole by default
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: ClusterRole
+      - equal:
+          path: metadata.name
+          value: k8s-image-mirror
+
+  - it: should grant get and list on pods and namespaces
+    asserts:
+      - equal:
+          path: rules[0]
+          value:
+            apiGroups: [""]
+            resources: ["pods", "namespaces"]
+            verbs: ["get", "list"]
+
+  - it: should grant get and list on jobs and cronjobs
+    asserts:
+      - equal:
+          path: rules[1]
+          value:
+            apiGroups: ["batch"]
+            resources: ["jobs", "cronjobs"]
+            verbs: ["get", "list"]
+
+  - it: should not create ClusterRole when rbac.create is false
+    set:
+      rbac.create: false
+    asserts:
+      - hasDocuments:
+          count: 0

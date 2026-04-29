@@ -1,0 +1,93 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "k8s-image-mirror.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "k8s-image-mirror.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.job.schedule | quote }}
+  concurrencyPolicy: {{ .Values.job.concurrencyPolicy }}
+  successfulJobsHistoryLimit: {{ .Values.job.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.job.failedJobsHistoryLimit }}
+  suspend: {{ .Values.job.suspend }}
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: {{ .Values.job.ttlSecondsAfterFinished }}
+      backoffLimit: {{ .Values.job.backoffLimit }}
+      template:
+        metadata:
+          labels:
+            {{- include "k8s-image-mirror.selectorLabels" . | nindent 12 }}
+        spec:
+          serviceAccountName: {{ include "k8s-image-mirror.serviceAccountName" . }}
+          restartPolicy: Never
+          volumes:
+            - name: shared
+              emptyDir: {}
+            {{- with .Values.volumes }}
+            {{ toYaml . | nindent 12 }}
+            {{- end }}
+
+          initContainers:
+            - name: list-images
+              image: "{{ .Values.images.kubectl.repository }}:{{ include "k8s-image-mirror.kubectlVersion" . }}"
+              imagePullPolicy: {{ .Values.images.kubectl.pullPolicy }}
+              {{- with .Values.images.kubectl.command }}
+              command:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              env:
+                - name: SOURCE_FILTER
+                  value: {{ .Values.sourceFilter | quote }}
+              volumeMounts:
+                - name: shared
+                  mountPath: /shared
+
+          containers:
+            - name: mirror
+              image: "{{ .Values.images.mirror.repository }}:{{ include "k8s-image-mirror.mirrorVersion" . }}"
+              imagePullPolicy: {{ .Values.images.mirror.pullPolicy }}
+              {{- with .Values.images.mirror.command }}
+              command:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              {{- with .Values.envFrom }}
+              envFrom:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              env:
+                - name: TARGET_REGISTRY
+                  value: {{ .Values.targetRegistry | quote }}
+                - name: TARGET_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ include "k8s-image-mirror.targetRegistrySecretName" . }}
+                      key: {{ .Values.credentials.targetRegistryUsernameKey }}
+                - name: TARGET_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ include "k8s-image-mirror.targetRegistrySecretName" . }}
+                      key: {{ .Values.credentials.targetRegistryPasswordKey }}
+                - name: SOURCE_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ include "k8s-image-mirror.sourceRegistrySecretName" . }}
+                      key: {{ .Values.credentials.sourceRegistryUsernameKey }}
+                - name: SOURCE_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ include "k8s-image-mirror.sourceRegistrySecretName" . }}
+                      key: {{ .Values.credentials.sourceRegistryPasswordKey }}
+                - name: SRC_TLS_VERIFY
+                  value: {{ .Values.srcTlsVerify | quote }}
+                - name: DEST_TLS_VERIFY
+                  value: {{ .Values.destTlsVerify | quote }}
+              volumeMounts:
+                - name: shared
+                  mountPath: /shared
+                {{- with .Values.volumeMounts }}
+                {{ toYaml . | nindent 16 }}
+                {{- end }}
+              resources:
+                {{- toYaml .Values.resources | nindent 16 }}

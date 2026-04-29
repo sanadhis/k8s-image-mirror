@@ -1,0 +1,57 @@
+suite: ClusterRoleBinding
+templates:
+  - clusterrolebinding.yaml
+
+release:
+  name: k8s-image-mirror
+  namespace: default
+
+tests:
+  - it: should create a ClusterRoleBinding by default
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: ClusterRoleBinding
+      - equal:
+          path: metadata.name
+          value: k8s-image-mirror
+
+  - it: should reference the correct ClusterRole
+    asserts:
+      - equal:
+          path: roleRef.apiGroup
+          value: rbac.authorization.k8s.io
+      - equal:
+          path: roleRef.kind
+          value: ClusterRole
+      - equal:
+          path: roleRef.name
+          value: k8s-image-mirror
+
+  - it: should bind to the correct ServiceAccount and namespace
+    asserts:
+      - contains:
+          path: subjects
+          content:
+            kind: ServiceAccount
+            name: k8s-image-mirror
+            namespace: default
+
+  - it: should bind to custom ServiceAccount name when set
+    set:
+      serviceAccount.name: my-sa
+    asserts:
+      - contains:
+          path: subjects
+          content:
+            kind: ServiceAccount
+            name: my-sa
+            namespace: default
+
+  - it: should not create ClusterRoleBinding when rbac.create is false
+    set:
+      rbac.create: false
+    asserts:
+      - hasDocuments:
+          count: 0

@@ -1,0 +1,31 @@
+name: Chart PR
+
+on:
+  pull_request:
+    paths:
+      - 'chart/templates/**'
+      - 'chart/tests/**'
+      - 'chart/values**'
+
+jobs:
+  helm:
+    name: Helm chart test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone the code
+        uses: actions/checkout@v4
+
+      - uses: azure/setup-helm@dda3372f752e03dde6b3237bc9431cdc2f7a02a2 # v5.0.0
+        id: install-helm
+        with:
+          version: 'v3.20.2'
+
+      - name: Install Helm plugins
+        shell: bash
+        run: |
+          make plugins
+
+      - name: Test Helm Chart
+        shell: bash
+        run: |
+          make helm-test

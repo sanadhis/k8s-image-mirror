@@ -58,6 +58,7 @@ On every `git commit` the following checks run automatically:
 | Hook                       | Stage        | Scope                          |
 |----------------------------|--------------|--------------------------------|
 | `check-json`               | `pre-commit` | All JSON files                 |
+| `check-yaml`               | `pre-commit` | All YAML files except `chart/templates/` |
 | `end-of-file-fixer`        | `pre-commit` | All files                      |
 | `trailing-whitespace`      | `pre-commit` | All files                      |
 | `helm-lint`                | `pre-commit` | Changes under `chart/`         |

@@ -1,0 +1,372 @@
+suite: CronJob
+templates:
+  - cronjob.yaml
+
+release:
+  name: k8s-image-mirror
+  namespace: default
+
+tests:
+  - it: should create a CronJob
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: CronJob
+      - equal:
+          path: metadata.name
+          value: k8s-image-mirror
+      - equal:
+          path: metadata.namespace
+          value: default
+
+  - it: should set the cron schedule
+    set:
+      job.schedule: "0 4 * * *"
+    asserts:
+      - equal:
+          path: spec.schedule
+          value: "0 4 * * *"
+
+  - it: should default to Forbid concurrency policy
+    asserts:
+      - equal:
+          path: spec.concurrencyPolicy
+          value: Forbid
+
+  - it: should set successfulJobsHistoryLimit and failedJobsHistoryLimit
+    set:
+      job.successfulJobsHistoryLimit: 5
+      job.failedJobsHistoryLimit: 2
+    asserts:
+      - equal:
+          path: spec.successfulJobsHistoryLimit
+          value: 5
+      - equal:
+          path: spec.failedJobsHistoryLimit
+          value: 2
+
+  - it: should support suspend flag
+    set:
+      job.suspend: true
+    asserts:
+      - equal:
+          path: spec.suspend
+          value: true
+
+  - it: should set ttlSecondsAfterFinished and backoffLimit on the job template
+    set:
+      job.ttlSecondsAfterFinished: 3600
+      job.backoffLimit: 2
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.ttlSecondsAfterFinished
+          value: 3600
+      - equal:
+          path: spec.jobTemplate.spec.backoffLimit
+          value: 2
+
+  - it: should never restart the pod
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.restartPolicy
+          value: Never
+
+  - it: should use the correct ServiceAccount
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.serviceAccountName
+          value: k8s-image-mirror
+
+  - it: should set TARGET_REGISTRY env var
+    set:
+      targetRegistry: my-registry.example.com
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: TARGET_REGISTRY
+            value: my-registry.example.com
+
+  - it: should reference target registry credentials Secret by default
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: TARGET_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: k8s-image-mirror-target-credentials
+                key: username
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: TARGET_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: k8s-image-mirror-target-credentials
+                key: password
+
+  - it: should reference existingTargetRegistrySecret when configured
+    set:
+      credentials.existingTargetRegistrySecret: my-target-secret
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: TARGET_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: my-target-secret
+                key: username
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: TARGET_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: my-target-secret
+                key: password
+
+  - it: should reference source registry credentials Secret by default
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: SOURCE_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: k8s-image-mirror-source-credentials
+                key: username
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: SOURCE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: k8s-image-mirror-source-credentials
+                key: password
+
+  - it: should reference existingSourceRegistrySecret when configured
+    set:
+      credentials.existingSourceRegistrySecret: my-source-secret
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: SOURCE_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: my-source-secret
+                key: username
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: SOURCE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: my-source-secret
+                key: password
+
+  - it: should set SRC_TLS_VERIFY and DEST_TLS_VERIFY env vars
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: SRC_TLS_VERIFY
+            value: "true"
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: DEST_TLS_VERIFY
+            value: "true"
+
+  - it: should support disabling TLS verification
+    set:
+      srcTlsVerify: false
+      destTlsVerify: false
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: SRC_TLS_VERIFY
+            value: "false"
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: DEST_TLS_VERIFY
+            value: "false"
+
+  - it: should use custom mirror image
+    set:
+      images.mirror.repository: my-registry/skopeo
+      images.mirror.tag: v1.15.0
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.containers[0].image
+          value: my-registry/skopeo:v1.15.0
+
+  - it: should use custom kubectl image for the init container
+    set:
+      images.kubectl.repository: my-registry/kubectl
+      images.kubectl.tag: 1.28.0
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.initContainers[0].image
+          value: my-registry/kubectl:1.28.0
+
+  - it: should set the default command on the kubectl init container
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.initContainers[0].command
+          value:
+            - /usr/local/bin/scrape.sh
+
+  - it: should override the command on the kubectl init container when configured
+    set:
+      images.kubectl.command:
+        - /bin/sh
+        - -c
+        - custom-scrape.sh
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.initContainers[0].command
+          value:
+            - /bin/sh
+            - -c
+            - custom-scrape.sh
+
+  - it: should set SOURCE_FILTER env var with the default value on the init container
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.initContainers[0].env
+          content:
+            name: SOURCE_FILTER
+            value: ".*"
+
+  - it: should set custom SOURCE_FILTER env var on the init container
+    set:
+      sourceFilter: "my-registry.io/.*"
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.initContainers[0].env
+          content:
+            name: SOURCE_FILTER
+            value: "my-registry.io/.*"
+
+  - it: should not set command on mirror container by default
+    asserts:
+      - isNull:
+          path: spec.jobTemplate.spec.template.spec.containers[0].command
+
+  - it: should set command on mirror container when configured
+    set:
+      images.mirror.command:
+        - /bin/sh
+        - -c
+        - custom-entrypoint.sh
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.containers[0].command
+          value:
+            - /bin/sh
+            - -c
+            - custom-entrypoint.sh
+
+  - it: should not include envFrom on mirror container by default
+    asserts:
+      - isNull:
+          path: spec.jobTemplate.spec.template.spec.containers[0].envFrom
+
+  - it: should set envFrom on mirror container when configured
+    set:
+      envFrom:
+        - configMapRef:
+            name: my-config
+        - secretRef:
+            name: my-secret
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].envFrom
+          content:
+            configMapRef:
+              name: my-config
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].envFrom
+          content:
+            secretRef:
+              name: my-secret
+
+  - it: should always mount the shared volume on the mirror container
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].volumeMounts
+          content:
+            name: shared
+            mountPath: /shared
+
+  - it: should add extra volumeMounts to mirror container when configured
+    set:
+      volumeMounts:
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].volumeMounts
+          content:
+            name: shared
+            mountPath: /shared
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].volumeMounts
+          content:
+            name: config
+            mountPath: /etc/config
+            readOnly: true
+
+  - it: should always include the shared emptyDir volume
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.volumes
+          content:
+            name: shared
+            emptyDir: {}
+
+  - it: should add extra volumes when configured
+    set:
+      volumes:
+        - name: config
+          configMap:
+            name: my-config
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.volumes
+          content:
+            name: shared
+            emptyDir: {}
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.volumes
+          content:
+            name: config
+            configMap:
+              name: my-config
+
+  - it: should set resource requests and limits
+    set:
+      resources.requests.cpu: "500m"
+      resources.requests.memory: "256Mi"
+      resources.limits.cpu: "2000m"
+      resources.limits.memory: "1Gi"
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.containers[0].resources.requests.cpu
+          value: 500m
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.containers[0].resources.requests.memory
+          value: 256Mi
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.containers[0].resources.limits.cpu
+          value: 2000m
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.containers[0].resources.limits.memory
+          value: 1Gi

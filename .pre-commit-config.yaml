@@ -1,0 +1,37 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-json
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  - repo: local
+    hooks:
+      - id: helm-lint
+        name: Helm lint
+        language: system
+        entry: make lint
+        pass_filenames: false
+        files: ^chart/
+
+      - id: helm-unittest
+        name: Helm unit tests
+        language: system
+        entry: make unittest
+        pass_filenames: false
+        files: ^chart/
+
+  - repo: https://github.com/losisin/helm-values-schema-json
+    rev: v2.3.1
+    hooks:
+      - id: helm-schema
+        name: helm-schema
+        args: ["-f", "chart/values.yaml", "-o", "chart/values.schema.json", "--use-helm-docs"]
+
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.4.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: [feat, fix, docs, style, refactor, perf, test, chore, build, ci, revert]

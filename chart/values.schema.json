@@ -1,0 +1,246 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+        "credentials": {
+            "type": "object",
+            "properties": {
+                "existingSourceRegistrySecret": {
+                    "description": "Reference an existing Secret for the source registry instead of creating a new one",
+                    "type": "string"
+                },
+                "existingTargetRegistrySecret": {
+                    "description": "Reference an existing Secret for the target registry instead of creating a new one",
+                    "type": "string"
+                },
+                "sourceRegistryPassword": {
+                    "description": "Plain-text password for the source registry (creates a new Secret)",
+                    "type": "string"
+                },
+                "sourceRegistryPasswordKey": {
+                    "description": "Key in the existing Secret that holds the password for the source registry",
+                    "type": "string"
+                },
+                "sourceRegistryUsername": {
+                    "description": "Plain-text username for the source registry (creates a new Secret)",
+                    "type": "string"
+                },
+                "sourceRegistryUsernameKey": {
+                    "description": "Key in the existing Secret that holds the username for the source registry",
+                    "type": "string"
+                },
+                "targetRegistryPassword": {
+                    "description": "Plain-text password for the target registry (creates a new Secret)",
+                    "type": "string"
+                },
+                "targetRegistryPasswordKey": {
+                    "description": "Key in the existing Secret that holds the password for the target registry",
+                    "type": "string"
+                },
+                "targetRegistryUsername": {
+                    "description": "Plain-text username for the target registry (creates a new Secret)",
+                    "type": "string"
+                },
+                "targetRegistryUsernameKey": {
+                    "description": "Key in the existing Secret that holds the username for the target registry",
+                    "type": "string"
+                }
+            }
+        },
+        "destTlsVerify": {
+            "description": "Verify TLS for the destination registry",
+            "type": "boolean"
+        },
+        "envFrom": {
+            "description": "Load env from config externally-managed configMap or secret",
+            "type": "array"
+        },
+        "fullnameOverride": {
+            "description": "Override the full release name",
+            "type": "string"
+        },
+        "images": {
+            "type": "object",
+            "properties": {
+                "kubectl": {
+                    "type": "object",
+                    "properties": {
+                        "command": {
+                            "description": "specify the command of the kubectl container to scrape images from the cluster",
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "pullPolicy": {
+                            "description": "Pull policy for the kubectl init-container image",
+                            "type": "string",
+                            "enum": [
+                                "Always",
+                                "IfNotPresent",
+                                "Never"
+                            ]
+                        },
+                        "repository": {
+                            "description": "Repository for the kubectl init-container image",
+                            "type": "string"
+                        },
+                        "tag": {
+                            "description": "Tag for the kubectl init-container image",
+                            "type": "string"
+                        }
+                    }
+                },
+                "mirror": {
+                    "type": "object",
+                    "properties": {
+                        "command": {
+                            "description": "override the default command of the mirror container",
+                            "type": "array"
+                        },
+                        "pullPolicy": {
+                            "description": "Pull policy for the skopeo image",
+                            "type": "string",
+                            "enum": [
+                                "Always",
+                                "IfNotPresent",
+                                "Never"
+                            ]
+                        },
+                        "repository": {
+                            "description": "Repository for the skopeo image used to mirror images",
+                            "type": "string"
+                        },
+                        "tag": {
+                            "description": "Tag for the skopeo image",
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "job": {
+            "type": "object",
+            "properties": {
+                "backoffLimit": {
+                    "description": "Number of retries before marking the job as failed",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "concurrencyPolicy": {
+                    "description": "Concurrency policy for the CronJob",
+                    "type": "string",
+                    "enum": [
+                        "Allow",
+                        "Forbid",
+                        "Replace"
+                    ]
+                },
+                "failedJobsHistoryLimit": {
+                    "description": "Number of failed completed jobs to retain",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "schedule": {
+                    "description": "Cron schedule expression for the mirror job",
+                    "type": "string"
+                },
+                "successfulJobsHistoryLimit": {
+                    "description": "Number of successful completed jobs to retain",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "suspend": {
+                    "description": "Suspend the CronJob (no new jobs will be scheduled)",
+                    "type": "boolean"
+                },
+                "ttlSecondsAfterFinished": {
+                    "description": "Seconds after completion before the Job resource is deleted",
+                    "type": "integer",
+                    "minimum": 0
+                }
+            }
+        },
+        "nameOverride": {
+            "description": "Override the chart name",
+            "type": "string"
+        },
+        "rbac": {
+            "type": "object",
+            "properties": {
+                "create": {
+                    "description": "Create ClusterRole and ClusterRoleBinding for the mirror job",
+                    "type": "boolean"
+                }
+            }
+        },
+        "resources": {
+            "type": "object",
+            "properties": {
+                "limits": {
+                    "type": "object",
+                    "properties": {
+                        "cpu": {
+                            "description": "CPU limit for the mirror job container",
+                            "type": "string"
+                        },
+                        "memory": {
+                            "description": "Memory limit for the mirror job container",
+                            "type": "string"
+                        }
+                    }
+                },
+                "requests": {
+                    "type": "object",
+                    "properties": {
+                        "cpu": {
+                            "description": "CPU request for the mirror job container",
+                            "type": "string"
+                        },
+                        "memory": {
+                            "description": "Memory request for the mirror job container",
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "serviceAccount": {
+            "type": "object",
+            "properties": {
+                "annotations": {
+                    "description": "Annotations to add to the ServiceAccount",
+                    "type": "object"
+                },
+                "create": {
+                    "description": "Create a dedicated ServiceAccount for the mirror job",
+                    "type": "boolean"
+                },
+                "name": {
+                    "description": "Name of the ServiceAccount (defaults to the full release name when empty)",
+                    "type": "string"
+                }
+            }
+        },
+        "sourceFilter": {
+            "description": "Filter (regex) only images from source registry/namespace to mirror images to (optional)",
+            "type": "string"
+        },
+        "srcTlsVerify": {
+            "description": "Verify TLS for the source registry",
+            "type": "boolean"
+        },
+        "targetRegistry": {
+            "description": "Target registry to mirror images to (required)",
+            "type": "string"
+        },
+        "volumeMounts": {
+            "description": "additional volume mounts",
+            "type": "array"
+        },
+        "volumes": {
+            "description": "additional volumes",
+            "type": "array"
+        }
+    }
+}

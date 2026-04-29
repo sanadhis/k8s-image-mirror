@@ -1,0 +1,105 @@
+# -- Override the chart name
+nameOverride: ""
+# -- Override the full release name
+fullnameOverride: ""
+
+# -- Target registry to mirror images to (required)
+targetRegistry: "your-registry.example.com"
+
+# -- Filter (regex) only images from source registry/namespace to mirror images to (optional)
+sourceFilter: ".*"
+
+credentials:
+  # -- Plain-text username for the target registry (creates a new Secret)
+  targetRegistryUsername: ""
+  # -- Plain-text password for the target registry (creates a new Secret)
+  targetRegistryPassword: ""
+  # -- Reference an existing Secret for the target registry instead of creating a new one
+  existingTargetRegistrySecret: ""
+  # -- Key in the existing Secret that holds the username for the target registry
+  targetRegistryUsernameKey: username
+  # -- Key in the existing Secret that holds the password for the target registry
+  targetRegistryPasswordKey: password
+  # -- Plain-text username for the source registry (creates a new Secret)
+  sourceRegistryUsername: ""
+  # -- Plain-text password for the source registry (creates a new Secret)
+  sourceRegistryPassword: ""
+  # -- Reference an existing Secret for the source registry instead of creating a new one
+  existingSourceRegistrySecret: ""
+  # -- Key in the existing Secret that holds the username for the source registry
+  sourceRegistryUsernameKey: username
+  # -- Key in the existing Secret that holds the password for the source registry
+  sourceRegistryPasswordKey: password
+
+# -- Verify TLS for the source registry
+srcTlsVerify: true
+# -- Verify TLS for the destination registry
+destTlsVerify: true
+
+images:
+  kubectl:
+    # -- Repository for the kubectl init-container image
+    repository: ghcr.io/sanadhis/k8s-image-mirror
+    # -- Tag for the kubectl init-container image
+    tag: ""
+    # -- Pull policy for the kubectl init-container image
+    pullPolicy: IfNotPresent # @schema enum: [Always, IfNotPresent, Never]
+    # -- specify the command of the kubectl container to scrape images from the cluster
+    command: ["/usr/local/bin/scrape.sh"]
+  mirror:
+    # -- Repository for the skopeo image used to mirror images
+    repository: ghcr.io/sanadhis/k8s-image-mirror
+    # -- Tag for the skopeo image
+    tag: ""
+    # -- Pull policy for the skopeo image
+    pullPolicy: IfNotPresent # @schema enum: [Always, IfNotPresent, Never]
+    # -- override the default command of the mirror container
+    command: []
+
+job:
+  # -- Cron schedule expression for the mirror job
+  schedule: "0 2 * * *"
+  # -- Seconds after completion before the Job resource is deleted
+  ttlSecondsAfterFinished: 86400 # @schema minimum: 0
+  # -- Number of retries before marking the job as failed
+  backoffLimit: 0 # @schema minimum: 0
+  # -- Concurrency policy for the CronJob
+  concurrencyPolicy: Forbid # @schema enum: [Allow, Forbid, Replace]
+  # -- Number of successful completed jobs to retain
+  successfulJobsHistoryLimit: 3 # @schema minimum: 0
+  # -- Number of failed completed jobs to retain
+  failedJobsHistoryLimit: 1 # @schema minimum: 0
+  # -- Suspend the CronJob (no new jobs will be scheduled)
+  suspend: false
+
+resources:
+  requests:
+    # -- CPU request for the mirror job container
+    cpu: "200m"
+    # -- Memory request for the mirror job container
+    memory: "128Mi"
+  limits:
+    # -- CPU limit for the mirror job container
+    cpu: "1000m"
+    # -- Memory limit for the mirror job container
+    memory: "512Mi"
+
+# -- Load env from config externally-managed configMap or secret
+envFrom: []
+
+# -- additional volume mounts
+volumeMounts: []
+# -- additional volumes
+volumes: []
+
+serviceAccount:
+  # -- Create a dedicated ServiceAccount for the mirror job
+  create: true
+  # -- Name of the ServiceAccount (defaults to the full release name when empty)
+  name: ""
+  # -- Annotations to add to the ServiceAccount
+  annotations: {}
+
+rbac:
+  # -- Create ClusterRole and ClusterRoleBinding for the mirror job
+  create: true

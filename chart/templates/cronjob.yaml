@@ -58,7 +58,7 @@ spec:
               {{- end }}
               env:
                 - name: TARGET_REGISTRY
-                  value: {{ .Values.targetRegistry | quote }}
+                  value: {{ required "targetRegistry is required" .Values.targetRegistry | quote }}
                 - name: TARGET_USERNAME
                   valueFrom:
                     secretKeyRef:

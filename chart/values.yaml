@@ -4,7 +4,7 @@ nameOverride: ""
 fullnameOverride: ""
 
 # -- Target registry to mirror images to (required)
-targetRegistry: "your-registry.example.com"
+targetRegistry: ""
 
 # -- Filter (regex) only images from source registry/namespace to mirror images to (optional)
 sourceFilter: ".*"

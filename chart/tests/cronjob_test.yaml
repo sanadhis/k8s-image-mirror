@@ -2,11 +2,21 @@ suite: CronJob
 templates:
   - cronjob.yaml
 
+set:
+  targetRegistry: "example-registry.io"
+
 release:
   name: k8s-image-mirror
   namespace: default
 
 tests:
+  - it: should fail if targetRegistry is not set
+    set:
+      targetRegistry: ""
+    asserts:
+      - failedTemplate:
+          errorMessage: targetRegistry is required
+
   - it: should create a CronJob
     asserts:
       - hasDocuments:

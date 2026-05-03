@@ -16,7 +16,11 @@ while IFS= read -r src_image; do
   # A registry segment contains '.' or ':', or equals 'localhost'.
   first_segment="${src_image%%/*}"
   if [[ "$first_segment" =~ [.:]  || "$first_segment" == "localhost" ]]; then
-    image_path="${src_image#*/}"
+    if [[ "${STRIP_NAMESPACE:-false}" == "true" ]] ; then
+      image_path="${src_image##*/}"
+    else
+      image_path="${src_image#*/}"
+    fi
   else
     image_path="$src_image"
   fi

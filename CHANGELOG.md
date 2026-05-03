@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.3](https://github.com/sanadhis/k8s-image-mirror/compare/v1.0.2...v1.0.3) (2026-05-03)
+
+
+### Bug Fixes
+
+* **chart:** add stripNamespace configuration ([71b30fe](https://github.com/sanadhis/k8s-image-mirror/commit/71b30fe7929677f3b6c1752060db5b566529636b))
+* **docker:** add STRIP_NAMESPACE env ([bd032a8](https://github.com/sanadhis/k8s-image-mirror/commit/bd032a8c532a1587c45ec4fce70ca26ccd2f2b07))
+
 ## [1.0.2](https://github.com/sanadhis/k8s-image-mirror/compare/v1.0.1...v1.0.2) (2026-05-02)
 
 

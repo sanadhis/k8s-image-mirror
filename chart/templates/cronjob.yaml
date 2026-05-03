@@ -83,6 +83,8 @@ spec:
                   value: {{ .Values.srcTlsVerify | quote }}
                 - name: DEST_TLS_VERIFY
                   value: {{ .Values.destTlsVerify | quote }}
+                - name: STRIP_NAMESPACE
+                  value: {{ .Values.stripNamespace | quote }}
               volumeMounts:
                 - name: shared
                   mountPath: /shared

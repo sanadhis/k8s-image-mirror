@@ -230,6 +230,10 @@
             "description": "Verify TLS for the source registry",
             "type": "boolean"
         },
+        "stripNamespace": {
+            "description": "Strip namespace from each of the source docker image's name. E.g. registry.example.com/myapp/image:tag -\u003e newregistry.example.com/image:tag",
+            "type": "boolean"
+        },
         "targetRegistry": {
             "description": "Target registry to mirror images to (required)",
             "type": "string"

@@ -207,6 +207,24 @@ tests:
             name: DEST_TLS_VERIFY
             value: "false"
 
+  - it: should default STRIP_NAMESPACE to false
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: STRIP_NAMESPACE
+            value: "false"
+
+  - it: should set STRIP_NAMESPACE when enabled
+    set:
+      stripNamespace: true
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: STRIP_NAMESPACE
+            value: "true"
+
   - it: should use custom mirror image
     set:
       images.mirror.repository: my-registry/skopeo

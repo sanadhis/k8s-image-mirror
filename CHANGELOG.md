@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/sanadhis/k8s-image-mirror/compare/v1.0.3...v1.1.0) (2026-05-04)
+
+
+### Features
+
+* **chart:** add and set to default skipIfExists to false ([704c51e](https://github.com/sanadhis/k8s-image-mirror/commit/704c51ef61694936520693473e22ff17bd3ae867))
+* **docker:** add SKIP_IF_EXISTS to control target overwriting ([1819bbd](https://github.com/sanadhis/k8s-image-mirror/commit/1819bbd39b1e326e4a3c18ae222001e1b8360ffb))
+
 ## [1.0.3](https://github.com/sanadhis/k8s-image-mirror/compare/v1.0.2...v1.0.3) (2026-05-03)
 
 

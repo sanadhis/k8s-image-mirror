@@ -222,6 +222,10 @@
                 }
             }
         },
+        "skipIfExists": {
+            "description": "Skip copying an image if it already exists in the target registry",
+            "type": "boolean"
+        },
         "sourceFilter": {
             "description": "Filter (regex) only images from source registry/namespace to mirror images to (optional)",
             "type": "string"

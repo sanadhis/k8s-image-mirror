@@ -11,6 +11,8 @@ sourceFilter: ".*"
 
 # -- Strip namespace from each of the source docker image's name. E.g. registry.example.com/myapp/image:tag -> newregistry.example.com/image:tag
 stripNamespace: false
+# -- Skip copying an image if it already exists in the target registry
+skipIfExists: false
 
 credentials:
   # -- Plain-text username for the target registry (creates a new Secret)

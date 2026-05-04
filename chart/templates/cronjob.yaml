@@ -85,6 +85,8 @@ spec:
                   value: {{ .Values.destTlsVerify | quote }}
                 - name: STRIP_NAMESPACE
                   value: {{ .Values.stripNamespace | quote }}
+                - name: SKIP_IF_EXISTS
+                  value: {{ .Values.skipIfExists | quote }}
               volumeMounts:
                 - name: shared
                   mountPath: /shared

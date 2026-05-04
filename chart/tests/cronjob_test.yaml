@@ -225,6 +225,24 @@ tests:
             name: STRIP_NAMESPACE
             value: "true"
 
+  - it: should default SKIP_IF_EXISTS to false
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: SKIP_IF_EXISTS
+            value: "false"
+
+  - it: should set SKIP_IF_EXISTS when enabled
+    set:
+      skipIfExists: true
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: SKIP_IF_EXISTS
+            value: "true"
+
   - it: should use custom mirror image
     set:
       images.mirror.repository: my-registry/skopeo

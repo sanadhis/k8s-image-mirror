@@ -33,6 +33,7 @@ helm install \
 | `sourceFilter`                             | Regex to filter source images by registry/namespace  | `".*"`        | No       |
 | `job.schedule`                             | Cron schedule for the mirror job                     | `"0 2 * * *"` | No       |
 | `stripNamespace`                           | Strip the namespace prefix from mirrored image names | `false`       | No       |
+| `skipIfExists`                             | Skip copying an image if it already exists in the target registry | `true` | No |
 | `srcTlsVerify`                             | Verify TLS for the source registry                   | `true`        | No       |
 | `destTlsVerify`                            | Verify TLS for the target registry                   | `true`        | No       |
 | `credentials.targetRegistryUsername`       | Plain-text username for the target registry          | `""`          | No       |

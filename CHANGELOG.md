@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/sanadhis/k8s-image-mirror/compare/v1.1.0...v1.1.1) (2026-05-05)
+
+
+### Bug Fixes
+
+* **docker:** support multi-arch copy ([0c8c8f0](https://github.com/sanadhis/k8s-image-mirror/commit/0c8c8f0bba56cf7c0e9d667cda7b2800ebc716a8))
+
 ## [1.1.0](https://github.com/sanadhis/k8s-image-mirror/compare/v1.0.3...v1.1.0) (2026-05-04)
 
 

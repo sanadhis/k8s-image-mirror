@@ -40,6 +40,7 @@ while IFS= read -r src_image; do
 
   if [[ "${SKIP_IF_EXISTS:-false}" == "true" ]]; then
     if skopeo inspect \
+        --raw \
         "${inspect_creds}" \
         "${inspect_tls}" \
         "docker://${dst_image}" &>/dev/null; then
@@ -51,6 +52,7 @@ while IFS= read -r src_image; do
   fi
 
   if skopeo copy \
+      --multi-arch=all \
       "${src_creds}" \
       "${dst_creds}" \
       "${src_tls}" \

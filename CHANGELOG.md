@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/sanadhis/k8s-image-mirror/compare/v1.1.1...v1.1.2) (2026-05-07)
+
+
+### Bug Fixes
+
+* **docker:** scrape jobs and cronjobs also ([56ab00c](https://github.com/sanadhis/k8s-image-mirror/commit/56ab00c0a06b216f7dacf837eb62efd9c92f0340))
+
 ## [1.1.1](https://github.com/sanadhis/k8s-image-mirror/compare/v1.1.0...v1.1.1) (2026-05-05)
 
 
